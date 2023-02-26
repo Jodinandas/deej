@@ -1,5 +1,14 @@
 package main
 
+// #cgo CFLAGS: -m64
+// #cgo LDFLAGS: -lmmdevapi
+//#define COBJMACROS // Allow INTERFACE_METHOD(This, xxx)
+//#include <initguid.h> // https://stackoverflow.com/a/31757757
+//#include <windows.h>
+//#include <stdio.h>
+//#include <mmdeviceapi.h> // IMMDevice, IMMDeviceEnumerator
+//#include <endpointvolume.h> // IAudioMeterInformation
+import "C"
 import (
 	"flag"
 	"fmt"

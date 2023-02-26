@@ -4,7 +4,7 @@ IF "%GOPATH%"=="" GOTO NOGO
 IF NOT EXIST %GOPATH%\bin\rsrc.exe GOTO INSTALL
 :POSTINSTALL
 ECHO Creating pkg/deej/cmd/rsrc.syso
-%GOPATH%\bin\rsrc -manifest pkg\deej\assets\deej.manifest  -ico pkg\deej\assets\logo.ico -o pkg\deej\cmd\rsrc_windows.syso
+C:\Users\Jonas Kriegl\go\pkg\mod\github.com\akavel\rsrc@v0.10.2rsrc_windows_amd64.exe -manifest pkg\deej\assets\deej.manifest  -ico pkg\deej\assets\logo.ico -o pkg\deej\cmd\rsrc_windows.syso
 GOTO DONE
 
 :INSTALL

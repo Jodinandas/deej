@@ -13,7 +13,8 @@ ECHO Embedding build-time parameters:
 ECHO - gitCommit %GIT_COMMIT%
 ECHO - versionTag %VERSION_TAG%
 ECHO - buildType %BUILD_TYPE%
-
+set GOOS ="windows"
+set GOARCH=amd64
 go build -o "%DEEJ_ROOT%\deej-dev.exe" -ldflags "-X main.gitCommit=%GIT_COMMIT% -X main.versionTag=%VERSION_TAG% -X main.buildType=%BUILD_TYPE%" "%DEEJ_ROOT%\pkg\deej\cmd"
 if %ERRORLEVEL% NEQ 0 GOTO BUILDERROR
 ECHO Done.
