@@ -1,5 +1,15 @@
 package main
 
+// #cgo CFLAGS: -m64
+// #cgo LDFLAGS: -lmmdevapi -lole32
+//#define COBJMACROS // Allow INTERFACE_METHOD(This, xxx)
+//#include <initguid.h> // https://stackoverflow.com/a/31757757
+//#include <windows.h>
+//#include <stdio.h>
+//#include <mmdeviceapi.h> // IMMDevice, IMMDeviceEnumerator
+//#include <endpointvolume.h> // IAudioMeterInformation
+//#include "../volumemeter.h"
+import "C"
 import (
 	"flag"
 	"fmt"
@@ -22,6 +32,8 @@ func init() {
 }
 
 func main() {
+	new_volume_meter();
+	get_meter_level();	
 
 	// first we need a logger
 	logger, err := deej.NewLogger(buildType)
@@ -63,4 +75,14 @@ func main() {
 	if err = d.Initialize(); err != nil {
 		named.Fatalw("Failed to initialize deej", "error", err)
 	}
+}
+
+func new_volume_meter(){
+	C.init_device();
+	C.init_meter();
+}
+
+func get_meter_level() {
+	level := C.float(C.get_meter_level());
+	fmt.Println("Level: ", float32(level));
 }
