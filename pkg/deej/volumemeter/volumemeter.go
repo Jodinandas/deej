@@ -12,27 +12,48 @@ package volumemeter
 import "C"
 import (
 	"time"
+	"fmt"
 )
 
-func NewVolumeMeter() {
+func NewPlaybackVolumeMeter() {
 	C.init_default_playback_device()
 	C.init_playback_meter()
 }
 
-func GetMeterLevel() (float32) {
+func NewCaptureVolumeMeter(){
+	C.init_default_capture_device()
+	C.init_capture_meter()
+}
+
+func GetPlaybackMeterLevel() (float32) {
 	level := C.float(C.get_playback_meter_level());
 	return float32(level);
 }
 
+func GetCaptureMeterLevel() (float32) {
+	level := C.float(C.get_capture_meter_level());
+	return float32(level)
+}
+
 // opens a new channel that contains all new meter level events
-func GetMeterLevelChannel() (chan float32){
-	ch := make(chan float32);
+func GetMeterLevelChannel() (chan string){
+	ch := make(chan string);
 	go func() {
-	NewVolumeMeter();
+	NewPlaybackVolumeMeter();
+	//NewCaptureVolumeMeter(); -> uncommenting this leads to crashing for some reason TODO
 	for {
-			ch <- GetMeterLevel();
+			pb := firstN(fmt.Sprintf("%v", GetPlaybackMeterLevel()), 4)
+			//ct := firstN(fmt.Sprintf("%v", GetCaptureMeterLevel()), 4)
+			ct := "0.0"
+			ch <- ct + "|" + pb
 			time.Sleep(50 * time.Millisecond);
 		}
 	}()
 	return ch
+}
+func firstN(s string, n int) string {
+     if len(s) > n {
+          return s[:n]
+     }
+     return s
 }

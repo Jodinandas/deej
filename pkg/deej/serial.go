@@ -26,7 +26,7 @@ type SerialIO struct {
 	logger *zap.SugaredLogger
 
 	stopChannel chan bool
-	meterChannel chan float32
+	meterChannel chan string
 	connected   bool
 	connOptions serial.OpenOptions
 	conn        io.ReadWriteCloser
@@ -124,10 +124,11 @@ func (sio *SerialIO) Start() error {
 				sio.close(namedLogger)
 			case line := <-lineChannel:
 				sio.handleLine(namedLogger, line)
-			case meterLevel := <-meterChannel:
-				fmt.Printf("\033[1A\033[K")
-				fmt.Println(strings.Repeat("-", int(100*meterLevel)))
-				sio.write(firstN(fmt.Sprintf("%v", meterLevel), 4), sio.logger, connWriter)
+			case meterLevels := <-meterChannel:
+				fmt.Println(meterLevels)
+				//fmt.Printf("\033[1A\033[K")
+				//fmt.Println(strings.Repeat("-", int(100*meterLevels[0])))
+				sio.write(meterLevels, sio.logger, connWriter)
 			}
 		}
 	}()
@@ -135,12 +136,7 @@ func (sio *SerialIO) Start() error {
 	return nil
 }
 
-func firstN(s string, n int) string {
-     if len(s) > n {
-          return s[:n]
-     }
-     return s
-}
+
 
 // Stop signals us to shut down our serial connection, if one is active
 func (sio *SerialIO) Stop() {
