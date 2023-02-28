@@ -39,7 +39,8 @@ HRESULT hr;
 
 IMMDevice* mmdevice_playback = NULL;
 IMMDevice* mmdevice_capture = NULL;
-IAudioMeterInformation* meter_info = NULL;
+IAudioMeterInformation* meter_info_playback = NULL;
+IAudioMeterInformation* meter_info_capture = NULL;
 
 // initializes the windows audio device to provide access to IAudioMeter
 int init_default_playback_device() {
@@ -104,15 +105,30 @@ int init_default_capture_device() {
 	return 0;
 }
 int init_playback_meter() {
-	hr = IMMDevice_Activate(mmdevice,
+	hr = IMMDevice_Activate(mmdevice_playback,
 		&IID_IAudioMeterInformation,
 		CLSCTX_ALL,
 		NULL,
-		(void**)&meter_info);
+		(void**)&meter_info_playback);
 	if (FAILED(hr)) {
 		puts("Activate failed");
-		IMMDeviceEnumerator_Release(mmdevice);
-		IMMDevice_Release(mmdevice);
+		IMMDeviceEnumerator_Release(mmdevice_playback);
+		IMMDevice_Release(mmdevice_playback);
+		CoUninitialize();
+		return 1;
+	}
+	return 0;
+}
+int init_capture_meter() {
+	hr = IMMDevice_Activate(mmdevice_capture,
+		&IID_IAudioMeterInformation,
+		CLSCTX_ALL,
+		NULL,
+		(void**)&meter_info_playback);
+	if (FAILED(hr)) {
+		puts("Activate failed");
+		IMMDeviceEnumerator_Release(mmdevice_capture);
+		IMMDevice_Release(mmdevice_capture);
 		CoUninitialize();
 		return 1;
 	}
@@ -120,24 +136,39 @@ int init_playback_meter() {
 }
 
 // returns the peak meter level since the last call, keep in mind this value is beetween 0-1 and normalized to 100% volume!
-float get_meter_level() {
+float get_playback_meter_level() {
 	float peak = -1.0f;
-	hr = IAudioMeterInformation_GetPeakValue(meter_info, &peak);
+	hr = IAudioMeterInformation_GetPeakValue(meter_info_playback, &peak);
 	if (FAILED(hr)) {
 		puts("GetPeakValue failed");
-		IMMDeviceEnumerator_Release(mmdevice);
-		IMMDevice_Release(mmdevice);
-		IAudioMeterInformation_Release(meter_info);
+		IMMDeviceEnumerator_Release(mmdevice_playback);
+		IMMDevice_Release(mmdevice_playback);
+		IAudioMeterInformation_Release(meter_info_playback);
 		CoUninitialize();
 		return 0.0;
 	}
 	return peak;
 }
-
+float get_capture_meter_level() {
+	float peak = -1.0f;
+	hr = IAudioMeterInformation_GetPeakValue(meter_info_capture, &peak);
+	if (FAILED(hr)) {
+		puts("GetPeakValue failed");
+		IMMDeviceEnumerator_Release(mmdevice_capture);
+		IMMDevice_Release(mmdevice_capture);
+		IAudioMeterInformation_Release(meter_info_capture);
+		CoUninitialize();
+		return 0.0;
+	}
+	return peak;
+}
 void cleanup() {
-	IMMDeviceEnumerator_Release(mmdevice);
-	IMMDevice_Release(mmdevice);
-	IAudioMeterInformation_Release(meter_info);
+	IMMDeviceEnumerator_Release(mmdevice_playback);
+	IMMDeviceEnumerator_Release(mmdevice_capture);
+	IMMDevice_Release(mmdevice_playback);
+	IMMDevice_Release(mmdevice_capture);
+	IAudioMeterInformation_Release(meter_info_playback);
+	IAudioMeterInformation_Release(meter_info_capture);
 	CoUninitialize();
 	return;
 }

@@ -15,12 +15,12 @@ import (
 )
 
 func NewVolumeMeter() {
-	C.init_device()
-	C.init_meter()
+	C.init_default_playback_device()
+	C.init_playback_meter()
 }
 
 func GetMeterLevel() (float32) {
-	level := C.float(C.get_meter_level());
+	level := C.float(C.get_playback_meter_level());
 	return float32(level);
 }
 
