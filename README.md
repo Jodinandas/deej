@@ -4,6 +4,8 @@ go clean -modcache
 re-generate rsrc_windows.syso with default values from rsrc
 # TODO check if default out changed
 
+# CHANGED SERIAL RATE TO 115200
+
 
 # deej
 

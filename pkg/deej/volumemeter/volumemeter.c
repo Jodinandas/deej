@@ -37,11 +37,12 @@ DEFINE_GUID(IID_IAudioMeterInformation, 0xC02216F6, 0x8C67, 0x4B5B, 0x9D, 0x00, 
 HRESULT hr;
 
 
-IMMDevice* mmdevice = NULL;
+IMMDevice* mmdevice_playback = NULL;
+IMMDevice* mmdevice_capture = NULL;
 IAudioMeterInformation* meter_info = NULL;
 
 // initializes the windows audio device to provide access to IAudioMeter
-int init_device() {
+int init_default_playback_device() {
 	IMMDeviceEnumerator* dev_enumerator = NULL;
 
 	hr = CoInitialize(NULL);
@@ -62,17 +63,47 @@ int init_device() {
 	hr = IMMDeviceEnumerator_GetDefaultAudioEndpoint(dev_enumerator,
 		eRender,
 		eConsole,
-		&mmdevice);
+		&mmdevice_playback);
 	if (FAILED(hr)) {
 		puts("GetDefaultAudioEndpoint failed");
-		IMMDeviceEnumerator_Release(mmdevice);
+		IMMDeviceEnumerator_Release(mmdevice_playback);
 		CoUninitialize();
 		return 1;
 	}
 	return 0;
 }
 
-int init_meter() {
+int init_default_capture_device() {
+	IMMDeviceEnumerator* dev_enumerator = NULL;
+
+	hr = CoInitialize(NULL);
+	if (FAILED(hr)) {
+		puts("CoInitialize failed");
+		return 1;
+	}
+
+	hr = CoCreateInstance(
+		&CLSID_MMDeviceEnumerator, NULL,
+		CLSCTX_ALL, &IID_IMMDeviceEnumerator,
+		(void**)&dev_enumerator);
+	if (FAILED(hr)) {
+		puts("CoCreateInstance failed");
+		return 1;
+	}
+
+	hr = IMMDeviceEnumerator_GetDefaultAudioEndpoint(dev_enumerator,
+		eCapture,
+		eConsole,
+		&mmdevice_capture);
+	if (FAILED(hr)) {
+		puts("GetDefaultAudioEndpoint failed");
+		IMMDeviceEnumerator_Release(mmdevice_capture);
+		CoUninitialize();
+		return 1;
+	}
+	return 0;
+}
+int init_playback_meter() {
 	hr = IMMDevice_Activate(mmdevice,
 		&IID_IAudioMeterInformation,
 		CLSCTX_ALL,

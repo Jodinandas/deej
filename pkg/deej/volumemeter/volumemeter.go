@@ -12,7 +12,6 @@ package volumemeter
 import "C"
 import (
 	"time"
-	"fmt"
 )
 
 func NewVolumeMeter() {
@@ -27,12 +26,12 @@ func GetMeterLevel() (float32) {
 
 // opens a new channel that contains all new meter level events
 func GetMeterLevelChannel() (chan float32){
-	fmt.Println("level: ", GetMeterLevel())
 	ch := make(chan float32);
 	go func() {
+	NewVolumeMeter();
 	for {
-			//ch <- GetMeterLevel();
-			time.Sleep(10);
+			ch <- GetMeterLevel();
+			time.Sleep(50 * time.Millisecond);
 		}
 	}()
 	return ch

@@ -11,7 +11,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/Jodinandas/deej/pkg/deej/util"
-	"github.com/Jodinandas/deej/pkg/deej/volumemeter"
 )
 
 const (
@@ -57,9 +56,8 @@ func NewDeej(logger *zap.SugaredLogger, verbose bool) (*Deej, error) {
 		verbose:     verbose,
 	}
 
-	meterChannel := volumemeter.GetMeterLevelChannel()
 
-	serial, err := NewSerialIO(d, logger, meterChannel)
+	serial, err := NewSerialIO(d, logger)
 	if err != nil {
 		logger.Errorw("Failed to create SerialIO", "error", err)
 		return nil, fmt.Errorf("create new SerialIO: %w", err)

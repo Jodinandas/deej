@@ -14,6 +14,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/Jodinandas/deej/pkg/deej/util"
+	"github.com/Jodinandas/deej/pkg/deej/volumemeter"
 )
 
 // SerialIO provides a deej-aware abstraction layer to managing serial I/O
@@ -46,7 +47,7 @@ var expectedLinePattern = regexp.MustCompile(`^\d{1,4}(\|\d{1,4})*\r\n$`)
 
 // NewSerialIO creates a SerialIO instance that uses the provided deej
 // instance's connection info to establish communications with the arduino chip
-func NewSerialIO(deej *Deej, logger *zap.SugaredLogger, meterChannel chan float32) (*SerialIO, error) {
+func NewSerialIO(deej *Deej, logger *zap.SugaredLogger) (*SerialIO, error) {
 	logger = logger.Named("serial")
 
 	sio := &SerialIO{
@@ -56,7 +57,6 @@ func NewSerialIO(deej *Deej, logger *zap.SugaredLogger, meterChannel chan float3
 		connected:           false,
 		conn:                nil,
 		sliderMoveConsumers: []chan SliderMoveEvent{},
-		meterChannel:        meterChannel,
 	}
 
 	logger.Debug("Created serial i/o instance")
@@ -116,6 +116,7 @@ func (sio *SerialIO) Start() error {
 		connReader := bufio.NewReader(sio.conn)
 		connWriter := bufio.NewWriter(sio.conn)
 		lineChannel := sio.readLine(namedLogger, connReader)
+		meterChannel := volumemeter.GetMeterLevelChannel()
 
 		for {
 			select {
@@ -123,16 +124,22 @@ func (sio *SerialIO) Start() error {
 				sio.close(namedLogger)
 			case line := <-lineChannel:
 				sio.handleLine(namedLogger, line)
-			}
-			select {
-				case meterLevel := <-sio.meterChannel:
-					sio.write(fmt.Sprintf("%v", meterLevel), sio.logger, connWriter)
-				default:
+			case meterLevel := <-meterChannel:
+				fmt.Printf("\033[1A\033[K")
+				fmt.Println(strings.Repeat("-", int(100*meterLevel)))
+				sio.write(firstN(fmt.Sprintf("%v", meterLevel), 4), sio.logger, connWriter)
 			}
 		}
 	}()
 
 	return nil
+}
+
+func firstN(s string, n int) string {
+     if len(s) > n {
+          return s[:n]
+     }
+     return s
 }
 
 // Stop signals us to shut down our serial connection, if one is active
