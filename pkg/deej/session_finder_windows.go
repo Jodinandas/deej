@@ -162,10 +162,10 @@ func (sf *wcaSessionFinder) GetLevelMeterChannel() (chan string){
 		for{
 		    in, out := float32(0.0), float32(0.0)
 		    if sf.masterIn != nil {
-		    in = sf.masterIn.GetPeakValue()
+		    in = sf.masterIn.GetPeakValue() * sf.masterIn.GetVolume()
 		    }
 		    if sf.masterOut != nil{
-		    out = sf.masterOut.GetPeakValue()
+		    out = sf.masterOut.GetPeakValue() * sf.masterOut.GetVolume()
 		    }
 			ch <- fmt.Sprintf("%v", int(100*in)) + "|" + fmt.Sprintf("%v", int(100*out))
 			if sf.masterOut.stale || sf.masterIn.stale {
