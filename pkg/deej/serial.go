@@ -113,18 +113,17 @@ func (sio *SerialIO) Start() error {
 
 	// read lines or await a stop
 	go func() {
-		connReader := bufio.NewReader(sio.conn)
-		connWriter := bufio.NewWriter(sio.conn)
-		lineChannel := sio.readLine(namedLogger, connReader)
+		//connReader := bufio.NewReader(sio.conn)
+		//lineChannel := sio.readLine(namedLogger, connReader)
 
 		for {
 			select {
 			case <-sio.stopChannel:
 				sio.close(namedLogger)
-			case line := <-lineChannel:
-				sio.handleLine(namedLogger, line)
+			//case line := <-lineChannel:
+			//	sio.handleLine(namedLogger, line)
 			case levels := <- sio.LevelMeterChannel:
-				sio.write(levels, sio.logger, connWriter)
+				sio.write(levels, sio.logger)
 			}
 		}
 	}()
@@ -203,8 +202,12 @@ func (sio *SerialIO) close(logger *zap.SugaredLogger) {
 	sio.connected = false
 }
 
-func (sio *SerialIO) write(s string, logger *zap.SugaredLogger, writer *bufio.Writer){
-	_, err := writer.WriteString(s)
+func (sio *SerialIO) write(s string, logger *zap.SugaredLogger){
+	_, err := sio.conn.Write([]byte(s))
+	// idk why, without this it does not work
+	time.Sleep(time.Millisecond)
+	sio.conn.Write([]byte("\n"))
+	time.Sleep(time.Millisecond)
 	if err != nil {
 		if sio.deej.Verbose() {
 			logger.Warnw("Failed to write line to serial", "error", err)
