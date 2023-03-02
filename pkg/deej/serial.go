@@ -113,15 +113,15 @@ func (sio *SerialIO) Start() error {
 
 	// read lines or await a stop
 	go func() {
-		//connReader := bufio.NewReader(sio.conn)
-		//lineChannel := sio.readLine(namedLogger, connReader)
+		connReader := bufio.NewReader(sio.conn)
+		lineChannel := sio.readLine(namedLogger, connReader)
 
 		for {
 			select {
 			case <-sio.stopChannel:
 				sio.close(namedLogger)
-			//case line := <-lineChannel:
-			//	sio.handleLine(namedLogger, line)
+			case line := <-lineChannel:
+				sio.handleLine(namedLogger, line)
 			case levels := <- sio.LevelMeterChannel:
 				sio.write(levels, sio.logger)
 			}
