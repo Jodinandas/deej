@@ -167,7 +167,7 @@ func (sf *wcaSessionFinder) GetLevelMeterChannel() (chan string){
 		    if sf.masterOut != nil{
 		    out = sf.masterOut.GetPeakValue() * sf.masterOut.GetVolume()
 		    }
-			ch <- fmt.Sprintf("%v", int(100*in)) + "|" + fmt.Sprintf("%v", int(100*out))
+			ch <- "<" + fmt.Sprintf("%v", int(100*in)) + "|" + fmt.Sprintf("%v", int(100*out)) + ">"
 			if sf.masterOut.stale || sf.masterIn.stale {
 				sf.SessionReloadEvent <- true
 			}

@@ -163,6 +163,7 @@ func (s *masterSession) GetVolume() float32 {
 
 	if err := s.volume.GetMasterVolumeLevelScalar(&level); err != nil {
 		s.logger.Warnw("Failed to get session volume", "error", err)
+		return 0.0
 	}
 
 	return level
@@ -170,7 +171,10 @@ func (s *masterSession) GetVolume() float32 {
 
 func (s *masterSession) GetPeakValue() float32 {
 	peak := float32(0.0)
-	s.VolumeMeter.GetPeakValue(&peak)
+	err := s.VolumeMeter.GetPeakValue(&peak)
+	if err != nil{
+		return 0.0
+	}
 	return peak
 }
 

@@ -205,9 +205,9 @@ func (sio *SerialIO) close(logger *zap.SugaredLogger) {
 func (sio *SerialIO) write(s string, logger *zap.SugaredLogger){
 	_, err := sio.conn.Write([]byte(s))
 	// idk why, without this it does not work
-	time.Sleep(time.Millisecond)
+	time.Sleep(time.Millisecond * 5)
 	sio.conn.Write([]byte("\n"))
-	time.Sleep(time.Millisecond)
+	time.Sleep(time.Millisecond * 5)
 	if err != nil {
 		if sio.deej.Verbose() {
 			logger.Warnw("Failed to write line to serial", "error", err)
@@ -244,8 +244,6 @@ func (sio *SerialIO) readLine(logger *zap.SugaredLogger, reader *bufio.Reader) c
 }
 
 func (sio *SerialIO) handleLine(logger *zap.SugaredLogger, line string) {
-
-	// this function receives an unsanitized line which is guaranteed to end with LF,
 	// but most lines will end with CRLF. it may also have garbage instead of
 	// deej-formatted values, so we must check for that! just ignore bad ones
 	if !expectedLinePattern.MatchString(line) {
