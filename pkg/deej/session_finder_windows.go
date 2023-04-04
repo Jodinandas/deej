@@ -160,12 +160,14 @@ func (sf *wcaSessionFinder) GetLevelMeterChannel() (chan string){
 	ch := make(chan string)
 	go func(){
 		for{
+			// during testing, sometimes sf.masterIn.GetVolume() chrashed the whole programm, therefore, 
+			// the level meters are normalized.
 		    in, out := float32(0.0), float32(0.0)
 		    if sf.masterIn != nil {
-		    in = sf.masterIn.GetPeakValue() * sf.masterIn.GetVolume()
+		    	in = sf.masterIn.GetPeakValue() //* sf.masterIn.GetVolume()
 		    }
 		    if sf.masterOut != nil{
-		    out = sf.masterOut.GetPeakValue() * sf.masterOut.GetVolume()
+		    	out = sf.masterOut.GetPeakValue() //* sf.masterOut.GetVolume()
 		    }
 			ch <- "<" + fmt.Sprintf("%v", int(100*in)) + "|" + fmt.Sprintf("%v", int(100*out)) + ">"
 			if sf.masterOut.stale || sf.masterIn.stale {

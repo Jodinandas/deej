@@ -5,12 +5,12 @@
 #define COLOR_ORDER GRB
 // per meter
 #define NUM_LEDS 10
-#define BRIGHTNESS 5
+#define BRIGHTNESS 10
 CRGB leds[NUM_LEDS*2];
 
 // slider defines
-const int NUM_SLIDERS = 6;
-const int analogInputs[NUM_SLIDERS] = {A0, A1, A2, A3, A4, A5};
+const int NUM_SLIDERS = 5;
+const int analogInputs[NUM_SLIDERS] = {A0, A1, A2, A3, A4};
 int analogSliderValues[NUM_SLIDERS];
 unsigned long time_now = 0;
 
@@ -32,7 +32,7 @@ void setup() {
 void loop() {
   time_now = millis();
   // non-blocking delay so that level meter is always prioritized.
-  while(millis() < time_now + 200){
+  while(millis() < time_now + 50){
     recvWithStartEndMarkers();
     showNewValues();
   }
@@ -50,7 +50,7 @@ void sendSliderValues() {
   String builtString = String("");
 
   for (int i = 0; i < NUM_SLIDERS; i++) {
-    builtString += String(mapToLinear((int)analogSliderValues[i]));
+    builtString += String(mapToLinear(resistorCorrection((int)analogSliderValues[i])));
 
     if (i < NUM_SLIDERS - 1) {
       builtString += String("|");
@@ -127,7 +127,7 @@ void set_meters(int levela, int levelb) {
   float vola = float(levela)/100.0;
   int vola_mapped = int(ceil(vola*NUM_LEDS));
   for (int i=0; i<vola_mapped; i++){
-    if (i < (NUM_LEDS/2 + NUM_LEDS/10)) {
+    if (i < (NUM_LEDS/2)) {
       leds[i] = CRGB(0,255,0);
     } else if (i < (NUM_LEDS - 2)){
       leds[i] = CRGB(226,180,0);
@@ -142,7 +142,7 @@ void set_meters(int levela, int levelb) {
   float volb = float(levelb)/100.0;
   int volb_mapped = int(ceil(volb*NUM_LEDS));
   for (int i=0; i<volb_mapped; i++){
-    if (i < (NUM_LEDS/2 + NUM_LEDS/10)) {
+    if (i < (NUM_LEDS/2)) {
       leds[NUM_LEDS + i] = CRGB(0,255,0);
     } else if (i < (NUM_LEDS - 2)){
       leds[NUM_LEDS + i] = CRGB(226,180,0);
@@ -155,6 +155,11 @@ void set_meters(int levela, int levelb) {
   }
   FastLED.show();
   delay(10);
+}
+
+// correct the incoming values, because we need to use a resistor to keep the potis from overheating
+int resistorCorrection(int value){
+  return int(6.82*float(value));
 }
 
 // the received potentiometers are not linear. This function roughly maps the input data to a linear range

@@ -144,7 +144,6 @@ func (s *masterSession) GetVolume() float32 {
 
 		if err := s.client.Request(&request, &reply); err != nil {
 			s.logger.Warnw("Failed to get session volume", "error", err)
-			return 0
 		}
 
 		level = parseChannelVolumes(reply.ChannelVolumes)
